@@ -49,6 +49,18 @@ datarefs = [
     ("sim/flightmodel/position/vh_ind", "m/s", "vertical velocity",1)
   ]
 
+def RequestDataRefs(sock):
+  for idx,dataref in enumerate(datarefs):
+    # Send one RREF Command for every dataref in the list.
+    # Give them an index number and a frequency in Hz.
+    # To disable sending you send frequency 0. 
+    cmd = b"RREF\x00"
+    freq=1
+    string = datarefs[idx][0].encode()
+    message = struct.pack("<5sii400s", cmd, freq, idx, string)
+    assert(len(message)==413)
+    sock.sendto(message, (UDP_IP, UDP_PORT))
+
 def DecodePacket(data):
   retvalues = {}
   # Read the Header "RREFO".
@@ -74,16 +86,7 @@ def main():
   sock = socket.socket(socket.AF_INET, # Internet
                        socket.SOCK_DGRAM) # UDP
 
-  for idx,dataref in enumerate(datarefs):
-    # Send one RREF Command for every dataref in the list.
-    # Give them an index number and a frequency in Hz.
-    # To disable sending you send frequency 0. 
-    cmd = b"RREF\x00"
-    freq=1
-    string = datarefs[idx][0].encode()
-    message = struct.pack("<5sii400s", cmd, freq, idx, string)
-    assert(len(message)==413)
-    sock.sendto(message, (UDP_IP, UDP_PORT))
+  RequestDataRefs(sock)
 
   while True:
     # Receive packet
