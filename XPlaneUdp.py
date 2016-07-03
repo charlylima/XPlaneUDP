@@ -89,6 +89,9 @@ class XPlaneUdp:
           singledata = data[(5+lenvalue*i):(5+lenvalue*(i+1))]
           (idx,value) = struct.unpack("<if", singledata)
           if idx in self.datarefs.keys():
+            # convert -0.0 values to positive 0.0 
+            if value < 0.0 and value > -0.001 :
+              value = 0.0
             retvalues[self.datarefs[idx]] = value
       self.xplaneValues.update(retvalues)
     except:
