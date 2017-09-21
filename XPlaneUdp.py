@@ -21,7 +21,7 @@ class XPlaneUdp:
   #constants
   UDP_PORT = 49000
   MCAST_GRP = "239.255.1.1"
-  MCAST_PORT = 49000
+  MCAST_PORT = 49707 # (MCAST_PORT was 49000 for XPlane10)
   
   def __init__(self):
     # Open a UDP Socket to receive on Port 49000
@@ -77,7 +77,7 @@ class XPlaneUdp:
       retvalues = {}
       # * Read the Header "RREFO".
       header=data[0:5]
-      if(header!=b"RREFO"):
+      if(header!=b"RREF,"): # (was b"RREFO" for XPlane10)
         print("Unknown packet: ", binascii.hexlify(data))
       else:
         # * We get 8 bytes for every dataref sent:

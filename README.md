@@ -2,7 +2,7 @@ XPlane UDP Examples in Python
 ===============================
 Examples how get data from X-Plane Flight Simulator via Network Interface in Python3.
 
-Tested with X-Plane version 10.45 on Debian Linux version 8 "jessie".
+Tested with X-Plane version 11.05 on Debian Linux version 8 "jessie".
 
 License: 
 --------
@@ -11,9 +11,9 @@ License:
 
 Documentation:
 --------------
-* @see "X-Plane 10/Resources/plugins/DataRefs.txt"
-* @see "X-Plane 10/Instructions/Sending Data to X-Plane.html"
-* @see "X-Plane 10/Instructions/Sending Data to X-Plane.rtfd/TXT.rtf"
+* @see "X-Plane 11/Resources/plugins/Commands.txt"
+* @see "X-Plane 11/Resources/plugins/DataRefs.txt"
+* @see "X-Plane 11/Instructions/X-Plane SPECS from Austin/Sending Data to X-Plane.rtfd/TXT.rtf"
 
 Links: 
 ------

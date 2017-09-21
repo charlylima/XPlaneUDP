@@ -1,6 +1,5 @@
 import unittest
-from XPlane10Udp import XPlaneUdp
-import XPlane10Udp
+import XPlaneUdp as xplib
 
 class TestXplaneUdp(unittest.TestCase):
 
@@ -9,7 +8,7 @@ class TestXplaneUdp(unittest.TestCase):
   
   def test1(self):
     
-    xp = XPlaneUdp()
+    xp = xplib.XPlaneUdp()
     xp.defaultFreq = 100
 
     beacon = xp.FindIp()
@@ -75,9 +74,9 @@ class TestXplaneUdp(unittest.TestCase):
     xp = None
 
     # Check that XPlane does no longer send datarefs:
-    xp = XPlaneUdp()
+    xp = xplib.XPlaneUdp()
     xp.FindIp()
-    with self.assertRaises(XPlane10Udp.XPlaneTimeout):
+    with self.assertRaises(xplib.XPlaneTimeout):
       xp.GetValues()
     xp = None
 
