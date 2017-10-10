@@ -4,6 +4,7 @@
 import socket
 import struct
 import binascii
+import platform
 
 class XPlaneIpNotFound(Exception):
   args="Could not find any running XPlane instance in network."
@@ -110,7 +111,10 @@ class XPlaneUdp:
       # open socket for multicast group. 
       sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
       sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-      sock.bind((self.MCAST_GRP, self.MCAST_PORT))
+      if platform.system() == "Windows":
+        sock.bind(('', self.MCAST_PORT))
+      else:
+        sock.bind((self.MCAST_GRP, self.MCAST_PORT))
       mreq = struct.pack("=4sl", socket.inet_aton(self.MCAST_GRP), socket.INADDR_ANY)
       sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
       sock.settimeout(3.0)
