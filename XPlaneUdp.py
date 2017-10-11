@@ -40,6 +40,25 @@ class XPlaneUdp:
     for i in range(len(self.datarefs)):
       self.AddDataRef(next(iter(self.datarefs.values())), freq=0)
     self.socket.close()
+  def WriteDataRef(self,dataref,value,vtype='float'):
+    '''
+    Write Dataref to XPlane
+    DREF0+(4byte byte value)+dref_path+0+spaces to complete the whole message to 509 bytes
+    DREF0+(4byte byte value of 1)+ sim/cockpit/switches/anti_ice_surf_heat_left+0+spaces to complete to 509 bytes
+    '''
+    cmd = b"DREF\x00"
+    dataref  =dataref+'\x00'
+    string = dataref.ljust(500).encode()
+    message = "".encode()
+    if vtype == "float":
+      message = struct.pack("<5sf500s", cmd,value,string)
+    elif vtype == "int":
+      message = struct.pack("<5si500s", cmd, value, string)
+    elif vtype == "bool":
+      message = struct.pack("<5sI500s", cmd, int(value), string)
+
+    assert(len(message)==509)
+    self.socket.sendto(message, (self.BeaconData["IP"], self.UDP_PORT))
 
   def AddDataRef(self, dataref, freq = None):
 
