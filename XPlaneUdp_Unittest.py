@@ -1,5 +1,6 @@
 import unittest
 import XPlaneUdp as xplib
+import time
 
 class TestXplaneUdp(unittest.TestCase):
 
@@ -9,16 +10,17 @@ class TestXplaneUdp(unittest.TestCase):
   def test1(self):
     
     xp = xplib.XPlaneUdp()
-    xp.defaultFreq = 100
+    xp.defaultFreq = 10
 
     beacon = xp.FindIp()
     print(beacon)
     print()
     self.assertTrue( beacon )
     
-    xp.AddDataRef("sim/flightmodel/position/indicated_airspeed", freq=100)
+    xp.AddDataRef("sim/flightmodel/position/indicated_airspeed", freq=10)
     xp.AddDataRef("sim/flightmodel/position/latitude")
         
+    values = xp.GetValues()
     values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed", "sim/flightmodel/position/latitude"} )
@@ -28,14 +30,16 @@ class TestXplaneUdp(unittest.TestCase):
 
     xp.AddDataRef("sim/flightmodel/position/latitude",0)
     values = xp.GetValues()
+    values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed"} )
     values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed"} )
 
-    xp.AddDataRef("sim/flightmodel/position/indicated_airspeed", freq=200)
+    xp.AddDataRef("sim/flightmodel/position/indicated_airspeed", freq=20)
     xp.AddDataRef("sim/flightmodel/position/longitude")
+    values = xp.GetValues()
     values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed", "sim/flightmodel/position/longitude"} )
@@ -51,13 +55,15 @@ class TestXplaneUdp(unittest.TestCase):
 
     xp.AddDataRef("sim/flightmodel/position/latitude",0)
     values = xp.GetValues()
+    values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed", "sim/flightmodel/position/longitude"} )
     values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed", "sim/flightmodel/position/longitude"} )
 
-    xp.AddDataRef("sim/flightmodel/position/latitude",100)
+    xp.AddDataRef("sim/flightmodel/position/latitude",10)
+    values = xp.GetValues()
     values = xp.GetValues()
     print(values)
     self.assertEqual( values.keys() , {"sim/flightmodel/position/indicated_airspeed", "sim/flightmodel/position/longitude", "sim/flightmodel/position/latitude"} )
