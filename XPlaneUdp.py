@@ -13,6 +13,9 @@ class XPlaneIpNotFound(Exception):
 class XPlaneTimeout(Exception):
   args="XPlane timeout."
 
+class XPlaneVersionNotSupported(Exception):
+  args="XPlane version not supported."
+
 class XPlaneUdp:
 
   '''
@@ -140,62 +143,68 @@ class XPlaneUdp:
       sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
       sock.settimeout(3.0)
       
-      while not self.BeaconData:
-        
-        # receive data
-        try: 
-          packet, sender = sock.recvfrom(1472)
+      # receive data
+      try:   
+        packet, sender = sock.recvfrom(1472)
+        print("XPlane Beacon: ", packet.hex())
 
-          # decode data
-          # * Header
-          header = packet[0:5]
-          if header != b"BECN\x00":
-            print("Unknown packet from "+sender[0])
-            print(str(len(packet)) + " bytes")
-            print(packet)
-            print(binascii.hexlify(packet))
-            
+        # decode data
+        # * Header
+        header = packet[0:5]
+        if header != b"BECN\x00":
+          print("Unknown packet from "+sender[0])
+          print(str(len(packet)) + " bytes")
+          print(packet)
+          print(binascii.hexlify(packet))
+          
+        else:
+          # * Data
+          data = packet[5:21]
+          # struct becn_struct
+          # {
+          # 	uchar beacon_major_version;		// 1 at the time of X-Plane 10.40
+          # 	uchar beacon_minor_version;		// 1 at the time of X-Plane 10.40
+          # 	xint application_host_id;			// 1 for X-Plane, 2 for PlaneMaker
+          # 	xint version_number;			// 104014 for X-Plane 10.40b14
+          # 	uint role;						// 1 for master, 2 for extern visual, 3 for IOS
+          # 	ushort port;					// port number X-Plane is listening on
+          # 	xchr	computer_name[strDIM];		// the hostname of the computer 
+          # };
+          beacon_major_version = 0
+          beacon_minor_version = 0
+          application_host_id = 0
+          xplane_version_number = 0
+          role = 0
+          port = 0
+          (
+            beacon_major_version,  # 1 at the time of X-Plane 10.40
+            beacon_minor_version,  # 1 at the time of X-Plane 10.40
+            application_host_id,   # 1 for X-Plane, 2 for PlaneMaker
+            xplane_version_number, # 104014 for X-Plane 10.40b14
+            role,                  # 1 for master, 2 for extern visual, 3 for IOS
+            port,                  # port number X-Plane is listening on
+            ) = struct.unpack("<BBiiIH", data)
+          hostname = packet[21:-1] # the hostname of the computer
+          hostname = hostname[0:hostname.find(0)]
+          if beacon_major_version == 1 \
+              and beacon_minor_version <= 2 \
+              and application_host_id == 1:
+              self.BeaconData["IP"] = sender[0]
+              self.BeaconData["Port"] = port
+              self.BeaconData["hostname"] = hostname.decode()
+              self.BeaconData["XPlaneVersion"] = xplane_version_number
+              self.BeaconData["role"] = role
+              print("XPlane Beacon Version: {}.{}.{}".format(beacon_major_version, beacon_minor_version, application_host_id))
           else:
-            # * Data
-            data = packet[5:21]
-            # struct becn_struct
-            # {
-            # 	uchar beacon_major_version;		// 1 at the time of X-Plane 10.40
-            # 	uchar beacon_minor_version;		// 1 at the time of X-Plane 10.40
-            # 	xint application_host_id;			// 1 for X-Plane, 2 for PlaneMaker
-            # 	xint version_number;			// 104014 for X-Plane 10.40b14
-            # 	uint role;						// 1 for master, 2 for extern visual, 3 for IOS
-            # 	ushort port;					// port number X-Plane is listening on
-            # 	xchr	computer_name[strDIM];		// the hostname of the computer 
-            # };
-            beacon_major_version = 0
-            beacon_minor_version = 0
-            application_host_id = 0
-            xplane_version_number = 0
-            role = 0
-            port = 0
-            (
-              beacon_major_version,  # 1 at the time of X-Plane 10.40
-              beacon_minor_version,  # 1 at the time of X-Plane 10.40
-              application_host_id,   # 1 for X-Plane, 2 for PlaneMaker
-              xplane_version_number, # 104014 for X-Plane 10.40b14
-              role,                  # 1 for master, 2 for extern visual, 3 for IOS
-              port,                  # port number X-Plane is listening on
-              ) = struct.unpack("<BBiiIH", data)
-            computer_name = packet[21:-1]
-            if beacon_major_version == 1 \
-               and beacon_minor_version == 1 \
-               and application_host_id == 1:
-                self.BeaconData["IP"] = sender[0]
-                self.BeaconData["Port"] = port
-                self.BeaconData["hostname"] = computer_name.decode()
-                self.BeaconData["XPlaneVersion"] = xplane_version_number
-                self.BeaconData["role"] = role
+            print("XPlane Beacon Version not supported: {}.{}.{}".format(beacon_major_version, beacon_minor_version, application_host_id))
+            raise XPlaneVersionNotSupported()
 
-        except socket.timeout:
-          raise XPlaneIpNotFound()
+      except socket.timeout:
+        print("XPlane IP not found.")
+        raise XPlaneIpNotFound()
+      finally:
+        sock.close()
 
-      sock.close()
       return self.BeaconData
 
 # Example how to use:
@@ -219,6 +228,10 @@ if __name__ == '__main__':
       except XPlaneTimeout:
         print("XPlane Timeout")
         exit(0)
+
+  except XPlaneVersionNotSupported:
+    print("XPlane Version not supported.")
+    exit(0)
 
   except XPlaneIpNotFound:
     print("XPlane IP not found. Probably there is no XPlane running in your local network.")

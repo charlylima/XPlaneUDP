@@ -13,7 +13,7 @@ Documentation:
 --------------
 * @see "X-Plane 11/Resources/plugins/Commands.txt"
 * @see "X-Plane 11/Resources/plugins/DataRefs.txt"
-* @see "X-Plane 11/Instructions/X-Plane SPECS from Austin/Sending Data to X-Plane.rtfd/TXT.rtf"
+* @see "X-Plane 11/Instructions/X-Plane SPECS from Austin/Exchanging Data with X-Plane.rtfd/TXT.rtf"
 
 Links: 
 ------
