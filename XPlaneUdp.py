@@ -5,6 +5,7 @@ import socket
 import struct
 import binascii
 import platform
+from time import sleep
 
 class XPlaneIpNotFound(Exception):
   args="Could not find any running XPlane instance in network."
@@ -20,7 +21,6 @@ class XPlaneUdp:
   '''
   
   #constants
-  UDP_PORT = 49000
   MCAST_GRP = "239.255.1.1"
   MCAST_PORT = 49707 # (MCAST_PORT was 49000 for XPlane10)
   
@@ -87,12 +87,14 @@ class XPlaneUdp:
     string = dataref.encode()
     message = struct.pack("<5sii400s", cmd, freq, idx, string)
     assert(len(message)==413)
-    self.socket.sendto(message, (self.BeaconData["IP"], self.UDP_PORT))
+    self.socket.sendto(message, (self.BeaconData["IP"], self.BeaconData["Port"]))
+    if (self.datarefidx%100 == 0):
+      sleep(0.2)
 
   def GetValues(self):
     try:
       # Receive packet
-      data, addr = self.socket.recvfrom(1024) # buffer size is 1024 bytes
+      data, addr = self.socket.recvfrom(1472) # maximum bytes of an RREF answer X-Plane will send (Ethernet MTU - IP hdr - UDP hdr)
       # Decode Packet
       retvalues = {}
       # * Read the Header "RREFO".
@@ -142,7 +144,7 @@ class XPlaneUdp:
         
         # receive data
         try: 
-          packet, sender = sock.recvfrom(15000)
+          packet, sender = sock.recvfrom(1472)
 
           # decode data
           # * Header
@@ -216,6 +218,8 @@ if __name__ == '__main__':
         print(values)
       except XPlaneTimeout:
         print("XPlane Timeout")
+        exit(0)
 
   except XPlaneIpNotFound:
     print("XPlane IP not found. Probably there is no XPlane running in your local network.")
+    exit(0)
